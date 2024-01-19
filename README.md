@@ -39,17 +39,18 @@ The Task Management App is designed to streamline task organization and manageme
 
 ## Screenshots
 
-![Task List](assets/screenshots/task_list.png)
+<img src="/assets/screenshots/task_list.png" alt="Task List" width="200"/>
 *Screenshot of the Task List screen.*
 
-![Create Task](assets/screenshots/create_task.png)
+<img src="/assets/screenshots/create_task.png" alt="Create Task" width="200"/>
 *Screenshot of the Create Task screen.*
 
-![Edit Task](assets/screenshots/edit_task.png)
+<img src="/assets/screenshots/edit_task.png" alt="Edit Task" width="200"/>
 *Screenshot of the Edit Task screen.*
 
-![Delete Task](assets/screenshots/edit_task.png)
+<img src="/assets/screenshots/delete_task.png" alt="Delete Task" width="200"/>
 *Screenshot of the Delete Task screen.*
+
 
 ## Installation
 
