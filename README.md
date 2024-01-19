@@ -56,7 +56,7 @@ The Task Management App is designed to streamline task organization and manageme
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/task-management-app.git
+   git clone https://github.com/MuhammadDanyalRehmanOfficial/Task-Management.git
    ```
 
 2. Navigate to the project folder:
