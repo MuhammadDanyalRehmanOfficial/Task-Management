@@ -22,11 +22,12 @@ class FeedbackScreen extends StatelessWidget {
       }
     }
 
+    int i = 1;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Task Feedback',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,
           ),
@@ -39,42 +40,42 @@ class FeedbackScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Provide Feedback for Task:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
               'Task ID: $taskId',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: StreamBuilder(
-                stream: _feedbackService.getFeedbackForTask(taskId),
+                stream: _feedbackService.getFeedbackEntriesForTask(taskId),
                 builder: (context, AsyncSnapshot snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {
                     return ListView.builder(
                       itemCount: snapshot.data?.docs.length ?? 0,
                       itemBuilder: (context, index) {
-                        var feedback = snapshot.data?.docs[index];
+                        var feedbackEntry = snapshot.data?.docs[index];
 
                         // Use the null coalescing operator to provide a default value if 'timestamp' is null
-                        var timestamp = feedback?['timestamp'] as Timestamp? ??
+                        var timestamp = feedbackEntry?['timestamp'] as Timestamp? ??
                             Timestamp.now();
 
                         // Format the timestamp to display date and time
                         var formattedDateTime = DateFormat('yyyy-MM-dd HH:mm')
                             .format(timestamp.toDate());
 
-                        int i = 1;
-
                         return ListTile(
-                          leading: CircleAvatar(child: Text('${i++}')),
-                          title: Text(feedback?['feedback'] ?? ''),
+                          leading: CircleAvatar(
+                              backgroundColor: Colors.amber,
+                              child: Text('${i++}')),
+                          title: Text(feedbackEntry?['feedback'] ?? ''),
                           subtitle: Text(
                             'Submitted at: $formattedDateTime',
                           ),

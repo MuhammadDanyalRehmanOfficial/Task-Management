@@ -24,11 +24,17 @@ class _FeedbackFormState extends State<FeedbackForm> {
         ),
         SizedBox(height: 16),
         ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.amber),
+          ),
           onPressed: () {
             widget.onSubmit(_feedbackController.text);
             _feedbackController.clear();
           },
-          child: Text('Submit Feedback'),
+          child: Center(
+            child: Text('Submit Feedback',
+                style: TextStyle(fontSize: 18, color: Colors.black)),
+          ),
         ),
       ],
     );

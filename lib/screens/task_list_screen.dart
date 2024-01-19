@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:taskmanager/utils/routes.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task.dart';
-import '../services/task_service.dart';
 import '../widgets/task_item.dart';
 import '../utils/roles.dart';
+import '../utils/routes.dart';
 
 class TaskListScreen extends StatefulWidget {
   @override
@@ -11,19 +11,25 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-  late List<Task> _tasks;
+  late List<Task> _tasks = [];
   late List<String> allowedPermissions;
+  late CollectionReference _taskCollection;
 
   @override
   void initState() {
     super.initState();
+    _taskCollection = FirebaseFirestore.instance.collection('tasks');
     _loadTasks();
   }
 
   // Function to fetch tasks
-  void _loadTasks() {
+  void _loadTasks() async {
+    final querySnapshot = await _taskCollection.get();
     setState(() {
-      _tasks = TaskService().getAllTasks();
+      _tasks = querySnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return Task.fromMap(data, doc.id);
+      }).toList();
     });
   }
 
@@ -37,9 +43,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.amber,
-        title: Text(
+        title: const Text(
           "Task List",
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
           ),
         ),
@@ -50,18 +56,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.amber,
               ),
-              child: Text(
-                userRole,
-                style: const TextStyle(
-                  fontSize: 24,
+              child: Center(
+                child: Text(
+                  userRole,
+                  style: const TextStyle(
+                    fontSize: 24,
+                  ),
                 ),
               ),
             ),
             ListTile(
-              title: Text('About'),
+              leading: const Icon(
+                Icons.info,
+                color: Colors.amber,
+              ),
+              title: const Text('About'),
+              subtitle: const Text(
+                'App name, version, and developer information',
+                overflow: TextOverflow.ellipsis,
+              ),
               onTap: () {
                 // Add logic for 'About' action
                 Navigator.pop(context); // Close the drawer
@@ -71,17 +87,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ],
         ),
       ),
-      body: ListView.builder(
-        itemCount: _tasks.length,
-        itemBuilder: (context, index) {
-          return TaskItem(
-            task: _tasks[index],
-            onDelete: _handleDelete,
-            onEditStatus: _handleEditStatus,
-            userRole: userRole,
-          );
-        },
-      ),
+      body: _tasks.isEmpty
+          ? const Center(
+              child: Text(
+                'No tasks available.',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            )
+          : ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                return TaskItem(
+                  task: _tasks[index],
+                  onDelete: _handleDelete,
+                  onEditStatus: _handleEditStatus,
+                  userRole: userRole,
+                );
+              },
+            ),
       floatingActionButton: canAddTask
           ? FloatingActionButton(
               onPressed: () {
@@ -91,17 +118,16 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   }
                 });
               },
-              child: Icon(Icons.add),
               backgroundColor: Colors.amber,
+              child: const Icon(Icons.add),
             )
           : null,
     );
   }
 
-  void _handleDelete(String taskId) {
+  void _handleDelete(String taskId) async {
     if (allowedPermissions.contains(Roles.delete)) {
-      // Convert the taskId from String to int before calling deleteTask
-      TaskService().deleteTask(int.parse(taskId));
+      await _taskCollection.doc(taskId).delete();
       _loadTasks(); // Reload tasks after deleting a task
     }
   }
@@ -120,18 +146,30 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   // Function to show the 'About' dialog
   void _showAboutDialog(BuildContext context) {
+    const appName = "Task Management";
+    const appVersion = "1.0.0"; // Replace with your app version
+    const developerName = "Muhammad Danyal Rehman";
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('About Task Manager'),
-          content: Text('Your about information goes here.'),
+          title: const Text('About'),
+          content: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('App Name: $appName'),
+              Text('Version: $appVersion'),
+              Text('Developer: $developerName'),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text('Close'),
+              child: const Text('Close'),
             ),
           ],
         );

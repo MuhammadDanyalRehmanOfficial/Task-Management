@@ -4,6 +4,7 @@ import 'package:taskmanager/firebase_options.dart';
 import 'package:taskmanager/screens/create_task_screen.dart';
 import 'package:taskmanager/screens/edit_task_screen.dart';
 import 'package:taskmanager/screens/feedback_screen.dart';
+import 'package:taskmanager/screens/splash_screen.dart';
 import 'package:taskmanager/screens/task_details_screen.dart';
 import 'package:taskmanager/screens/task_list_screen.dart';
 import './screens/home_screen.dart';
@@ -22,14 +23,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Task Management App',
+      title: 'Task Management',
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),
-      initialRoute: Routes.home,
+      initialRoute: Routes.splash,
       routes: {
+        Routes.splash: (context) => SplashScreen(),
         Routes.home: (context) => const HomeScreen(
-              title: 'Task Management App',
+              title: 'Task Management',
             ),
         Routes.taskList: (context) => TaskListScreen(),
         Routes.taskDetails: (context) => TaskDetailsScreen(),

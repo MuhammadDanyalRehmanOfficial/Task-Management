@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task.dart';
-import '../services/task_service.dart';
+import '../widgets/text_input_filed_c.dart';
+import 'package:email_sender/email_sender.dart';
 
 class CreateTaskScreen extends StatefulWidget {
+  const CreateTaskScreen({super.key});
+
   @override
   _CreateTaskScreenState createState() => _CreateTaskScreenState();
 }
 
 class _CreateTaskScreenState extends State<CreateTaskScreen> {
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
-  TextEditingController _statusController = TextEditingController();
-  int _taskId = 3; // Initialize with the starting ID value
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _statusController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  final CollectionReference tasksCollection =
+      FirebaseFirestore.instance.collection('tasks');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           "Create Task",
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
             fontSize: 24,
           ),
         ),
@@ -33,87 +39,104 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Title",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      hintText: "Enter title",
-                    ),
-                  ),
-                ],
+              TextInputFiledC(
+                controller: _titleController,
+                text: 'Title',
+                hint: 'Enter title',
               ),
-              SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Description",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      hintText: "Enter description",
-                    ),
-                    maxLines: null, // Allow unlimited lines
-                    keyboardType: TextInputType.multiline, // Enable multiline
-                  ),
-                ],
+              const SizedBox(height: 16),
+              TextInputFiledC(
+                controller: _descriptionController,
+                text: 'Description',
+                hint: 'Enter description',
               ),
-              SizedBox(height: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Status",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  TextField(
-                    controller: _statusController,
-                    decoration: InputDecoration(
-                      hintText: "Enter status",
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 16),
+              TextInputFiledC(
+                controller: _statusController,
+                text: 'Status',
+                hint: 'Enter status',
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
+              TextInputFiledC(
+                controller: _emailController,
+                text: 'Email',
+                hint: 'Enter email',
+              ),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.amber),
+                ),
+                onPressed: () async {
+                  // Show loading dialog while creating the task
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    },
+                  );
+
                   // Add logic to create a new task using the provided data
                   Task newTask = Task(
                     title: _titleController.text,
                     description: _descriptionController.text,
                     status: _statusController.text,
-                    id: _taskId, // Replace with a unique identifier logic
+                    email: _emailController.text,
+                    id: '', // leave empty to be assigned by Firestore
                   );
-                  // Increment the task ID for the next task
-                  _taskId++;
-                  // Add logic to save the new task using a TaskService
-                  TaskService().addTask(newTask);
 
-                  Navigator.pop(
-                      context, true); // Go back to the previous screen
+                  // Add logic to save the new task using Firestore
+                  DocumentReference docRef = await tasksCollection.add({
+                    'title': newTask.title,
+                    'description': newTask.description,
+                    'status': newTask.status,
+                    'email': newTask.email,
+                  });
+
+                  // Update the task ID with the assigned document ID
+                  newTask.id = docRef.id;
+
+                  // Update the task in Firestore with the assigned ID
+                  docRef.update({'id': newTask.id});
+
+                  // Dismiss the loading dialog
+                  Navigator.pop(context);
+
+                  // Create an email object with the required fields
+                  EmailSender emailsender = EmailSender();
+                  var response = await emailsender.sendMessage(
+                    newTask.email,
+                    'Task Created ${newTask.status}',
+                    newTask.title,
+                    newTask.description,
+                  );
+                  if (response["message"] == "emailSendSuccess") {
+                    print(response);
+                  } else {
+                    print("something Failed");
+                    //for understanding the error
+                    print(response);
+                  }
+
+                  // Show a Snackbar indicating the task creation success
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Task created successfully'),
+                    ),
+                  );
+
+                  // Go back to the previous screen
+                  Navigator.pop(context, true);
                 },
-                child: Center(
-                    child: Text(
-                  "Create Task",
-                  style: TextStyle(fontSize: 18, color: Colors.black),
-                )),
+                child: const Center(
+                  child: Text(
+                    "Create Task",
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  ),
+                ),
               ),
             ],
           ),

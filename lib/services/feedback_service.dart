@@ -1,20 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FeedbackService {
-  final CollectionReference feedbackCollection =
-      FirebaseFirestore.instance.collection('feedback');
-
-  Future<void> submitFeedback(String taskId, String feedback) async {
-    await feedbackCollection.add({
-      'taskId': taskId,
-      'feedback': feedback,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+  Stream getFeedbackEntriesForTask(String taskId) {
+    return FirebaseFirestore.instance
+        .collection('feedback')
+        .doc('task_$taskId')
+        .collection('feedback_entries')
+        .orderBy('timestamp', descending: false)
+        .snapshots();
   }
 
-  Stream<QuerySnapshot> getFeedbackForTask(String taskId) {
-    return feedbackCollection
-        .where('taskId', isEqualTo: taskId)
-        .snapshots(includeMetadataChanges: true);
+  Future<void> submitFeedback(String taskId, String feedback) async {
+    var timestamp = Timestamp.now();
+
+    await FirebaseFirestore.instance
+        .collection('feedback')
+        .doc('task_$taskId')
+        .collection('feedback_entries')
+        .add({
+      'feedback': feedback,
+      'timestamp': timestamp,
+    });
   }
 }

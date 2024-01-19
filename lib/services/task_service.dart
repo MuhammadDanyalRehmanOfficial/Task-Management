@@ -1,43 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/task.dart';
 
 class TaskService {
-  static List<Task> _tasks = [
-    Task(
-        title: "Practice Dart",
-        description: 'Solve the exercises from the HackMD article',
-        status: 'To Do',
-        id: 0),
-    Task(
-        title: "Make a Rock-Paper-Scissors game",
-        description: 'Use the dart:math library and the Random class',
-        status: 'In Progress',
-        id: 1),
-    Task(
-        title: "Create a palindrome checker",
-        description:
-            'Write a function that returns true if a string is a palindrome',
-        status: 'Completed',
-        id: 2),
-  ];
+  final CollectionReference _taskCollection =
+      FirebaseFirestore.instance.collection('tasks');
 
-  List<Task> getAllTasks() => _tasks;
-
-  Task getTaskById(int id) => _tasks.firstWhere((task) => task.id == id);
-
-  void addTask(Task task) => _tasks.add(task);
-
-  void updateTask(Task updatedTask) {
-    int index = _tasks.indexWhere((task) => task.id == updatedTask.id);
-    if (index != -1) {
-      _tasks[index] = updatedTask;
-    }
+  Future<List<Task>> getAllTasks() async {
+    final querySnapshot = await _taskCollection.get();
+    return querySnapshot.docs
+        .map((doc) => Task.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .toList();
   }
 
-  void updateTaskStatus(Task task, String newStatus) {
-    task.status = newStatus;
+  Future<Task> getTaskById(String id) async {
+    final docSnapshot = await _taskCollection.doc(id).get();
+    return Task.fromMap(docSnapshot.data() as Map<String, dynamic>, id);
   }
 
-  void deleteTask(int id) {
-    _tasks.removeWhere((task) => task.id == id);
+  Future<void> addTask(Task task) async {
+    await _taskCollection.add(task.toMap());
+  }
+
+  Future<void> updateTask(Task updatedTask) async {
+    await _taskCollection.doc(updatedTask.id).update(updatedTask.toMap());
+  }
+
+  Future<void> updateTaskStatus(String taskId, String newStatus) async {
+    await _taskCollection.doc(taskId).update({'status': newStatus});
+  }
+
+  Future<void> deleteTask(String taskId) async {
+    await _taskCollection.doc(taskId).delete();
   }
 }
