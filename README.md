@@ -48,7 +48,7 @@ Screenshot of the Create Task screen.
 <img src="/assets/screenshots/edit_task.png" alt="Edit Task" width="200"/>
 Screenshot of the Edit Task screen.
 
-<img src="/assets/screenshots/edit_task.png" alt="Delete Task" width="200"/>
+<img src="/assets/screenshots/delete_task.png" alt="Delete Task" width="200"/>
 Screenshot of the Delete Task screen.
 
 
