@@ -1,6 +1,3 @@
-Certainly! Below is a template for a `README.md` file that you can use for your project. Make sure to replace the placeholder information with your actual project details.
-
-
 # Task Management App
 
 A comprehensive task management app built with Flutter and Firebase Firestore, allowing users to efficiently organize, create, edit, and delete tasks with role-based access control.
