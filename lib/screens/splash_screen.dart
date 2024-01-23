@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/screens/signup_screen.dart';
 import 'dart:async';
-
-import 'home_screen.dart'; // Import your main screen or initial screen
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -20,9 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const HomeScreen(
-              title: 'Task Management',
-            ),
+            builder: (context) => SignUpScreen(),
           ),
         );
       },

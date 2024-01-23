@@ -4,10 +4,11 @@ import 'package:taskmanager/firebase_options.dart';
 import 'package:taskmanager/screens/create_task_screen.dart';
 import 'package:taskmanager/screens/edit_task_screen.dart';
 import 'package:taskmanager/screens/feedback_screen.dart';
+import 'package:taskmanager/screens/login_screen.dart';
+import 'package:taskmanager/screens/signup_screen.dart';
 import 'package:taskmanager/screens/splash_screen.dart';
 import 'package:taskmanager/screens/task_details_screen.dart';
 import 'package:taskmanager/screens/task_list_screen.dart';
-import './screens/home_screen.dart';
 import './utils/routes.dart';
 
 void main() async {
@@ -30,9 +31,8 @@ class MyApp extends StatelessWidget {
       initialRoute: Routes.splash,
       routes: {
         Routes.splash: (context) => SplashScreen(),
-        Routes.home: (context) => const HomeScreen(
-              title: 'Task Management',
-            ),
+        Routes.login: (context) => LoginScreen(),
+        Routes.signup: (context) => SignUpScreen(),
         Routes.taskList: (context) => TaskListScreen(),
         Routes.taskDetails: (context) => TaskDetailsScreen(),
         Routes.editTask: (context) => EditTaskScreen(),
