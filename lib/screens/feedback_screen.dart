@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../services/feedback_service.dart';
 import '../widgets/feedback_form.dart';
 
+
 class FeedbackScreen extends StatelessWidget {
   final FeedbackService _feedbackService = FeedbackService();
 
@@ -22,7 +23,6 @@ class FeedbackScreen extends StatelessWidget {
       }
     }
 
-    int i = 1;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -74,7 +74,7 @@ class FeedbackScreen extends StatelessWidget {
                         return ListTile(
                           leading: CircleAvatar(
                               backgroundColor: Colors.amber,
-                              child: Text('${i++}')),
+                              child: Text('${index+1}')),
                           title: Text(feedbackEntry?['feedback'] ?? ''),
                           subtitle: Text(
                             'Submitted at: $formattedDateTime',
