@@ -16,6 +16,7 @@ class AuthenticationService {
       // Save user details to Firestore
       await _firestore.collection('users').doc(userCredential.user!.uid).set({
         'email': email,
+        'password': password,
         'role': role,
       });
 
