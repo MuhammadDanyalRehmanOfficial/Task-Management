@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
         () {
           // Navigate to the main screen after the splash screen
           Role == null
-              ? Navigator.pushReplacementNamed(context, Routes.signup)
+              ? Navigator.pushReplacementNamed(context, Routes.login)
               : Navigator.pushReplacementNamed(context, Routes.taskList,
                   arguments: Role);
         },
