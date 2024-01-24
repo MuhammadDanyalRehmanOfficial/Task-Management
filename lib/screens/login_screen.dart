@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/authentication_service.dart';
 import '../utils/roles.dart';
@@ -43,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 20,
                 ),
                 AuthInput(
+                    icon: Icons.email,
                     isShow: false,
                     label: 'Email',
                     hint: 'example@gmail.com',
@@ -51,24 +53,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 10,
                 ),
                 AuthInput(
+                    icon: Icons.lock,
                     controller: _passwordController,
                     label: 'Password',
                     hint: 'example123',
                     isShow: true),
                 SizedBox(
                   height: 10,
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, Routes.signup);
-                  },
-                  child: Text(
-                    'Sign up now to create a new account!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.amber,
-                    ),
-                  ),
                 ),
                 // Login button
                 ElevatedButton(
@@ -99,6 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Text('Login successful. Role: $result')),
                         ),
                       );
+
+                      final SharedPreferences sharedPreferences =
+                          await SharedPreferences.getInstance();
+                      sharedPreferences.setString('userRole', result);
 
                       // Now you can navigate to different screens based on the role
                       if (result == Roles.admin) {

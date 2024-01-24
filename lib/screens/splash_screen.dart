@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:taskmanager/screens/signup_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+
+
+import '../utils/routes.dart';
+
+String? Role;
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -12,18 +17,28 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     // Add a delay to simulate a loading time or perform some asynchronous tasks
-    Timer(
-      const Duration(seconds: 2), // Adjust the duration as needed
-      () {
-        // Navigate to the main screen after the splash screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SignUpScreen(),
-          ),
-        );
-      },
-    );
+    getValidationData().whenComplete(() async {
+      Timer(
+        const Duration(seconds: 3), // Adjust the duration as needed
+        () {
+          // Navigate to the main screen after the splash screen
+          Role == null
+              ? Navigator.pushReplacementNamed(context, Routes.signup)
+              : Navigator.pushReplacementNamed(context, Routes.taskList,
+                  arguments: Role);
+        },
+      );
+    });
+  }
+
+  Future getValidationData() async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    var roles = sharedPreferences.getString('userRole');
+    setState(() {
+      Role = roles;
+    });
+    print(Role);
   }
 
   @override

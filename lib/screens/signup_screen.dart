@@ -39,9 +39,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 SizedBox(
                   height: 20,
                 ),
-                AuthInput(controller: _emailController, label: 'Email', hint: 'example@gmail.com', isShow: false),
+                AuthInput(icon: Icons.email,
+                    controller: _emailController,
+                    label: 'Email',
+                    hint: 'example@gmail.com',
+                    isShow: false),
                 SizedBox(height: 10),
-                AuthInput(controller: _passwordController, label: 'Password', hint: 'example123', isShow: true),
+                AuthInput(icon: Icons.lock,
+                    controller: _passwordController,
+                    label: 'Password',
+                    hint: 'example123',
+                    isShow: true),
                 SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
@@ -74,18 +82,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, Routes.login);
-                  },
-                  child: Text(
-                    'Already have an account? Login here!',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.amber,
-                    ),
-                  ),
-                ),
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.amber),

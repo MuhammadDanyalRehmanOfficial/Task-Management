@@ -27,7 +27,10 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final taskID = ModalRoute.of(context)!.settings.arguments as String;
+    final Map<String, dynamic> arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final userRole = arguments['userRole'];
+    final taskID = arguments['taskId'];
 
     return Scaffold(
       appBar: AppBar(
@@ -94,7 +97,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                           );
                         },
                       );
-                      _updateTask(context, taskID);
+                      _updateTask(context, taskID,userRole);
                       // Dismiss the loading dialog
                       Navigator.pop(context);
 
@@ -124,7 +127,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
-  Future<void> _updateTask(BuildContext context, String taskID) async {
+  Future<void> _updateTask(BuildContext context, String taskID,String userRole) async {
+    print(userRole);
+
     // Add logic to update the existing task using the provided data
     Task updatedTask = Task(
       title: _titleController.text,
@@ -134,16 +139,25 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       id: taskID,
     );
 
-    // Add logic to save the updated task to Firestore
-    await FirebaseFirestore.instance
-        .collection('tasks')
-        .doc(taskID)
-        .update(updatedTask.toMap());
+    // Check the user's role and update fields accordingly
+    if (userRole == 'Admin') {
+      // Admin can edit all fields
+      await FirebaseFirestore.instance
+          .collection('tasks')
+          .doc(taskID)
+          .update(updatedTask.toMap());
+    } else if (userRole == 'Manager') {
+      // Manager can only edit description and status
+      await FirebaseFirestore.instance.collection('tasks').doc(taskID).update({
+        'description': updatedTask.description,
+        'status': updatedTask.status,
+      });
+    }
 
     EmailSender emailsender = EmailSender();
     var response = await emailsender.sendMessage(
       updatedTask.email,
-      'Task Update ${updatedTask.status}}',
+      'Task Update ${updatedTask.status}',
       updatedTask.title,
       updatedTask.description,
     );

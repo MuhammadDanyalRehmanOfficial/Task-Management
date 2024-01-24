@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taskmanager/services/authentication_service.dart';
 import '../models/task.dart';
 import '../widgets/task_item.dart';
 import '../utils/roles.dart';
@@ -11,9 +13,11 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  AuthenticationService _authenticationService = AuthenticationService();
   late List<Task> _tasks = [];
   late List<String> allowedPermissions;
   late CollectionReference _taskCollection;
+  late String userRole; // Declare userRole at the class level
 
   @override
   void initState() {
@@ -36,7 +40,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     // Access the user role argument passed to the widget
-    final userRole = ModalRoute.of(context)!.settings.arguments as String;
+    userRole = ModalRoute.of(context)!.settings.arguments as String;
     allowedPermissions = Roles.rolePermissions[userRole] ?? [];
     bool canAddTask = allowedPermissions.contains(Roles.create);
 
@@ -82,6 +86,41 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 // Add logic for 'About' action
                 Navigator.pop(context); // Close the drawer
                 _showAboutDialog(context);
+              },
+            ),
+            canAddTask
+                ? ListTile(
+                    leading: const Icon(
+                      Icons.account_box,
+                      color: Colors.amber,
+                    ),
+                    title: const Text('Create Account'),
+                    subtitle: const Text(
+                      'Create new accounts',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () {
+                      // Add logic for 'Signup' action
+                      Navigator.pushReplacementNamed(context, Routes.signup);
+                    },
+                  )
+                : Container(),
+            ListTile(
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.amber,
+              ),
+              title: const Text('Logout'),
+              subtitle: const Text(
+                'Logout the account',
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () async {
+                // Add logic for 'Logout' action
+                _authenticationService.signOut();
+                final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+                sharedPreferences.remove('userRole');
+                Navigator.pushReplacementNamed(context, Routes.login);
               },
             ),
           ],
@@ -135,8 +174,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
   void _handleEditStatus(String taskId) {
     if (allowedPermissions.contains(Roles.edit)) {
       // Perform edit operation
-      Navigator.pushNamed(context, Routes.editTask, arguments: taskId)
-          .then((result) {
+      Navigator.pushNamed(
+        context,
+        Routes.editTask,
+        arguments: {
+          'taskId': taskId,
+          'userRole': userRole, // Pass the userRole to the EditTaskScreen
+        },
+      ).then((result) {
         if (result != null && result == true) {
           _loadTasks(); // Reload tasks after editing a task
         }

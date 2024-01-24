@@ -6,11 +6,12 @@ class AuthInput extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.hint,
-    required this.isShow,
+    required this.isShow, required this.icon,
   });
 
   final TextEditingController controller;
   final String label;
+  final IconData icon;
   final String hint;
   final bool isShow;
 
@@ -20,6 +21,8 @@ class AuthInput extends StatelessWidget {
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
+        prefixIconColor: Colors.amber,
+        prefixIcon: Icon(icon),
         label: Text(label),
         border: OutlineInputBorder(
           borderSide: BorderSide(width: 2),
