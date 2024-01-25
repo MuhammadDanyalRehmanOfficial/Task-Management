@@ -6,7 +6,7 @@ class AuthInput extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.hint,
-    required this.isShow, required this.icon,
+    required this.isShow, required this.icon, this.validator,
   });
 
   final TextEditingController controller;
@@ -14,6 +14,7 @@ class AuthInput extends StatelessWidget {
   final IconData icon;
   final String hint;
   final bool isShow;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class AuthInput extends StatelessWidget {
         ),
       ),
       obscureText: isShow,
+      validator: validator,
     );
   }
 }

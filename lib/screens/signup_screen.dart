@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:taskmanager/widgets/auth_input.dart';
 import '../utils/roles.dart';
-import '../utils/routes.dart';
 import '../services/authentication_service.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -14,7 +13,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordController = TextEditingController();
   AuthenticationService _authService = AuthenticationService();
 
-  String selectedRole = Roles.admin;
+  final _formKey = GlobalKey<FormState>();
+
+  String selectedRole = 'Select Role';
   bool _isLoading = false;
 
   @override
@@ -24,40 +25,66 @@ class _SignUpScreenState extends State<SignUpScreen> {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Welcome to\nTask Management',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.amber,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Welcome to\nTask Management',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                AuthInput(icon: Icons.email,
+                  SizedBox(
+                    height: 20,
+                  ),
+                  AuthInput(
+                    icon: Icons.email,
                     controller: _emailController,
                     label: 'Email',
                     hint: 'example@gmail.com',
-                    isShow: false),
-                SizedBox(height: 10),
-                AuthInput(icon: Icons.lock,
+                    isShow: false,
+                    validator: (value) {
+                      if (value == '') {
+                        return 'Please enter an email';
+                      } else if (!RegExp(
+                              r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$')
+                          .hasMatch(value!)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  AuthInput(
+                    icon: Icons.lock,
                     controller: _passwordController,
                     label: 'Password',
                     hint: 'example123',
-                    isShow: true),
-                SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1.5, color: Colors.grey),
+                    isShow: true,
+                    validator: (value) {
+                      if (value == '') {
+                        return 'please enter the password';
+                      } else if (value!.length < 6) {
+                        return 'please enter the at least 6 characters';
+                      } else {
+                        return null;
+                      }
+                    },
                   ),
-                  child: ListTile(
-                    title: Text('Select Role:'),
-                    trailing: DropdownButton<String>(
+                  SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1.5, color: Colors.grey),
+                    ),
+                    child: DropdownButton<String>(
+                      dropdownColor: Colors.amber,
+                      isExpanded: true,
+                      padding: EdgeInsets.only(left: 10),
                       value: selectedRole,
                       onChanged: (String? value) {
                         setState(() {
@@ -65,6 +92,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         });
                       },
                       items: [
+                        DropdownMenuItem(
+                          value: 'Select Role',
+                          child: Text('Select Role'),
+                        ),
                         DropdownMenuItem(
                           value: Roles.admin,
                           child: Text('Admin'),
@@ -80,72 +111,64 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.amber),
-                  ),
-                  onPressed: () async {
-                    // Set a flag to indicate that the signup process is in progress
-                    setState(() {
-                      _isLoading = true;
-                    });
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(Colors.amber),
+                    ),
+                    onPressed: () async {
+                      if (_formKey.currentState?.validate() ?? false) {
+                        // Set a flag to indicate that the signup process is in progress
+                        setState(() {
+                          _isLoading = true;
+                        });
 
-                    String? result = await _authService.signUp(
-                      _emailController.text,
-                      _passwordController.text,
-                      selectedRole,
-                    );
+                        String? result = await _authService.signUp(
+                          _emailController.text,
+                          _passwordController.text,
+                          selectedRole,
+                        );
 
-                    // Reset the loading flag
-                    setState(() {
-                      _isLoading = false;
-                    });
+                        // Reset the loading flag
+                        setState(() {
+                          _isLoading = false;
+                        });
 
-                    if (result != null) {
-                      // Successful signup
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Center(
-                            child: Text('Signup successful. Role: $result'),
-                          ),
-                        ),
-                      );
-
-                      // Navigate to the appropriate screen based on the role
-                      if (result == Roles.admin) {
-                        Navigator.pushNamed(context, Routes.taskList,
-                            arguments: Roles.admin);
-                      } else if (result == Roles.manager) {
-                        Navigator.pushNamed(context, Routes.taskList,
-                            arguments: Roles.manager);
-                      } else if (result == Roles.user) {
-                        Navigator.pushNamed(context, Routes.taskList,
-                            arguments: Roles.user);
+                        if (result != null) {
+                          // Successful signup
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Center(
+                                child: Text('Signup successful. Role: $result'),
+                              ),
+                            ),
+                          );
+                        } else {
+                          // Signup failed
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Signup failed'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
                       }
-                    } else {
-                      // Signup failed
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Signup failed'),
-                        ),
-                      );
-                    }
-                  },
-                  child: _isLoading
-                      ? Center(
-                          child:
-                              CircularProgressIndicator(), // Show loading indicator
-                        )
-                      : const Center(
-                          child: Text(
-                            "Sign Up",
-                            style: TextStyle(fontSize: 18, color: Colors.black),
+                    },
+                    child: _isLoading
+                        ? Center(
+                            child:
+                                CircularProgressIndicator(), // Show loading indicator
+                          )
+                        : const Center(
+                            child: Text(
+                              "Sign Up",
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            ),
                           ),
-                        ),
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -101,7 +101,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     ),
                     onTap: () {
                       // Add logic for 'Signup' action
-                      Navigator.pushReplacementNamed(context, Routes.signup);
+                      Navigator.pushNamed(context, Routes.signup);
                     },
                   )
                 : Container(),

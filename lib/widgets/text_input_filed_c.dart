@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 
 class TextInputFiledC extends StatelessWidget {
   const TextInputFiledC({
-    super.key,
+    Key? key,
     required this.controller,
     required this.text,
     required this.hint,
-  });
+    this.validator,
+  }) : super(key: key);
 
   final TextEditingController controller;
   final String text;
   final String hint;
+  final String? Function(String?)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +26,14 @@ class TextInputFiledC extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        TextField(
+        TextFormField(
           controller: controller,
           decoration: InputDecoration(
             hintText: hint,
           ),
           maxLines: null,
           keyboardType: TextInputType.multiline,
+          validator: validator, // Keep this line unchanged
         ),
       ],
     );

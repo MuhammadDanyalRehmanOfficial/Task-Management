@@ -13,15 +13,16 @@ class EditTaskScreen extends StatefulWidget {
 class _EditTaskScreenState extends State<EditTaskScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  late TextEditingController _statusController;
   late TextEditingController _emailController;
+
+  final _formKey = GlobalKey<FormState>();
+  String selectedStatus = 'Select Status';
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController();
     _descriptionController = TextEditingController();
-    _statusController = TextEditingController();
     _emailController = TextEditingController();
   }
 
@@ -56,69 +57,136 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           // Set the initial values of the controllers
           _titleController.text = task.title;
           _descriptionController.text = task.description;
-          _statusController.text = task.status;
+          selectedStatus = task.status;
           _emailController.text = task.email;
 
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextInputFiled(
-                    controller: _titleController,
-                    label: 'Title',
-                  ),
-                  TextInputFiled(
-                    controller: _descriptionController,
-                    label: 'Description',
-                  ),
-                  TextInputFiled(
-                    controller: _statusController,
-                    label: 'Status',
-                  ),
-                  TextInputFiled(
-                    controller: _emailController,
-                    label: 'Email',
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.amber),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextInputFiled(
+                      ischeck: true,
+                      controller: _titleController,
+                      label: 'Title',
+                      validator: (value) {
+                        if (value == '') {
+                          return 'Please enter a title';
+                        }
+                        return null;
+                      },
                     ),
-                    onPressed: () {
-                      // Show loading dialog while updating the task
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
-                      );
-                      _updateTask(context, taskID,userRole);
-                      // Dismiss the loading dialog
-                      Navigator.pop(context);
-
-                      // Show a Snackbar indicating the task creation success
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Task updated successfully'),
+                    TextInputFiled(
+                      ischeck: false,
+                      controller: _descriptionController,
+                      label: 'Description',
+                      validator: (value) {
+                        if (value == '') {
+                          return 'Please enter a description';
+                        }
+                        return null;
+                      },
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Status',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      );
+                        DropdownButton<String>(
+                          dropdownColor: Colors.amber,
+                          isExpanded: true,
+                          value: selectedStatus,
+                          onChanged: (String? value) {
+                            setState(() {
+                              selectedStatus = value!;
+                            });
+                          },
+                          items: [
+                            DropdownMenuItem(
+                              value: 'Select Status',
+                              child: Text('Select Status'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'to do',
+                              child: Text('To Do'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'in progress',
+                              child: Text('In Progress'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'completed',
+                              child: Text('Completed'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    TextInputFiled(
+                      ischeck: true,
+                      controller: _emailController,
+                      label: 'Email',
+                      validator: (value) {
+                        if (value == '') {
+                          return 'Please enter an email';
+                        } else if (!RegExp(
+                                r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$')
+                            .hasMatch(value!)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Colors.amber),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          // Show loading dialog while updating the task
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            },
+                          );
+                          _updateTask(context, taskID, userRole);
+                          // Dismiss the loading dialog
+                          Navigator.pop(context);
 
-                      // Go back to the previous screen
-                      Navigator.pop(context, true);
-                    },
-                    child: const Center(
-                      child: Text(
-                        "Update Task",
-                        style: TextStyle(fontSize: 18, color: Colors.black),
+                          // Show a Snackbar indicating the task creation success
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Task updated successfully'),
+                            ),
+                          );
+
+                          // Go back to the previous screen
+                          Navigator.pop(context, true);
+                        }
+                      },
+                      child: const Center(
+                        child: Text(
+                          "Update Task",
+                          style: TextStyle(fontSize: 18, color: Colors.black),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -127,14 +195,15 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     );
   }
 
-  Future<void> _updateTask(BuildContext context, String taskID,String userRole) async {
+  Future<void> _updateTask(
+      BuildContext context, String taskID, String userRole) async {
     print(userRole);
 
     // Add logic to update the existing task using the provided data
     Task updatedTask = Task(
       title: _titleController.text,
       description: _descriptionController.text,
-      status: _statusController.text,
+      status: selectedStatus,
       email: _emailController.text,
       id: taskID,
     );
